@@ -1,0 +1,72 @@
+//Hilbert matrice
+Matrix Hilbert(int j, int i){
+	Matrix hilbertMatrix = dan_matrix(j, i);
+	for (int s = 0; s < j; s++){
+		for (int h = 0; h < i; h++){
+			hilbertMatrix[s][h] = 1.0 / (s + h + 1);
+		}
+	}
+	return hilbertMatrix;
+}
+
+//Normalligninger
+Matrix dan_nl_totalmatrix(const Matrix& A, const Vektor& b){
+	size_t m = A.size();
+	size_t n = A[0].size();
+	Matrix T(n,Vektor(n+1));
+	for (size_t i=0; i<n ;i++){
+		for (size_t j=i; j<n; j++){
+			for (size_t k=0; k<m; k++){
+				T[i][j]+=A[k][i]*A[k][j];
+			}
+			T[j][i]=T[i][j];
+		}
+		for (size_t k=0; k<m; k++){
+			T[i][n]+=A[k][i]*b[k];
+		}
+	}
+	cout << endl;
+	return T;
+}
+
+//Gram-Schmidt
+pair <Matrix,Matrix> gs(const Matrix& A){
+	Matrix Q(A.size(),Vektor(A[0].size()));
+	Matrix R(A[0].size(),Vektor(A[0].size()));
+	size_t n=A[0].size();
+	Vektor z(A.size());
+	for (int k=0;k<n;k++){
+		z=søjle(A,k);
+		for (int j=0;j<k;j++){
+			double p=prik(søjle(Q,j),søjle(A,k));
+			R[j][k]=p;
+			z=opdatervektor(z,søjle(Q,j),p);
+		}
+		R[k][k]=norm(z);
+		for (int i=0;i<Q.size();i++){
+			Q[i][k]=z[i]/norm(z);
+		}
+	}
+	return {Q,R};
+}
+
+//Modificeret Gram-Schmidt
+Matrix mgs(Matrix& A){
+	size_t n=A[0].size();
+	Matrix R(n,Vektor(n));
+	for (int k=0;k<n;k++){
+		double nor=norm(søjle(A,k));
+		R[k][k]=nor;
+		for (int i=0;i<A.size();i++){
+			A[i][k]=A[i][k]/nor;
+		}
+		for (int j=k+1;j<n;j++){
+			double p=prik(søjle(A,j),søjle(A,k));
+			R[k][j]=p;
+			for (int l=0;l<A.size();l++){
+				A[l][j]=A[l][j]-p*A[l][k];
+			}
+		}
+	}
+	return R;
+}
